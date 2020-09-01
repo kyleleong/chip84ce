@@ -3,10 +3,12 @@
 #include <keypadc.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <tice.h>
 
 #include "chip8.h"
 
+#define CHIP8_BACKGROUNDCOLOR 0xDF
 #define CHIP8_COLORBLACK      0
 #define CHIP8_COLORWHITE      255
 #define CHIP8_FRAMESPERSECOND 60
@@ -28,6 +30,7 @@ void reset_timer1()
 
 bool loop(struct chip8 *chip8)
 {
+    bool valid_opcode = true;
     float raw = (float) atomic_load_increasing_32(&timer_1_Counter);
     uint32_t this_frame = (uint32_t) (raw / CHIP8_TICKSPERFRAME);
     int frame_diff = this_frame - prev_frame;
@@ -58,6 +61,10 @@ bool loop(struct chip8 *chip8)
     chip8->Kbd[0xE] = kb_IsDown(kb_KeySub);
     chip8->Kbd[0xF] = kb_IsDown(kb_KeyAdd);
 
+    valid_opcode = chip8_exec(chip8);
+    if (!valid_opcode)
+        return false;
+
     /* Reset the clock at (arbitrarily chosen) value to minimize frame count
        error due to raw variable's floating point imprecision. */
     prev_frame = this_frame;
@@ -86,6 +93,9 @@ int main(void)
     struct chip8 *chip8 = malloc(sizeof(struct chip8));
 
     chip8_init(chip8);
+
+    // TODO: Temporary until ROM loading implemented.
+    memcpy(&chip8->Mem[CHIP8_PROGRAMSTART], test_rom, sizeof(test_rom));
     
     gfx_Begin();
 
@@ -94,6 +104,8 @@ int main(void)
     gfx_SetTextBGColor(255);
 
     gfx_SetDrawBuffer();
+    gfx_SetColor(CHIP8_BACKGROUNDCOLOR);
+    gfx_FillRectangle_NoClip(0, 0, LCD_WIDTH, LCD_HEIGHT);
     gfx_Rectangle(CHIP8_SCRXOFFSET, CHIP8_SCRYOFFSET, CHIP8_SCRWIDTH * 4, CHIP8_SCRHEIGHT * 4);
 
     reset_timer1();
