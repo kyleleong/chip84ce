@@ -1,4 +1,5 @@
 #include <debug.h>
+#include <fileioc.h>
 #include <graphx.h>
 #include <keypadc.h>
 #include <stdbool.h>
@@ -8,13 +9,14 @@
 
 #include "chip8.h"
 
-#define CHIP8_BACKGROUNDCOLOR 0xDF
+#define CHIP8_BACKGROUNDCOLOR 0xBF
 #define CHIP8_COLORBLACK      0
 #define CHIP8_COLORWHITE      255
 #define CHIP8_FRAMESPERSECOND 60
 #define CHIP8_MAXTICKCOUNT    10000
 #define CHIP8_PIXELHEIGHT     4
 #define CHIP8_PIXELWIDTH      4
+#define CHIP8_ROMNAMESIZE     20
 #define CHIP8_SCRXOFFSET      32
 #define CHIP8_SCRYOFFSET      20
 #define CHIP8_TICKSPERFRAME   546
@@ -66,7 +68,7 @@ bool loop(struct chip8 *chip8)
         return false;
 
     /* Reset the clock at (arbitrarily chosen) value to minimize frame count
-       error due to raw variable's floating point imprecision. */
+       error due to raw variable's floating point imprecision.               */
     prev_frame = this_frame;
     if (this_frame > CHIP8_MAXTICKCOUNT)
     {
@@ -82,7 +84,7 @@ bool loop(struct chip8 *chip8)
                                      CHIP8_PIXELWIDTH, CHIP8_PIXELHEIGHT);
         }
 
-    gfx_BlitBuffer();
+    gfx_SwapDraw();
     
     return true;
 }
@@ -90,23 +92,48 @@ bool loop(struct chip8 *chip8)
 int main(void)
 {
     bool exec_again = true;
+    char rom_name[CHIP8_ROMNAMESIZE];
+    int i, rom_size, chunks_read;
     struct chip8 *chip8 = malloc(sizeof(struct chip8));
+    ti_var_t rom_slot; 
+
+    ti_CloseAll();
+
+    os_ClrHomeFull();
+    os_GetStringInput("ROM AppVar Name: ", rom_name, CHIP8_ROMNAMESIZE);
+    asm_NewLine();
+
+    rom_slot = ti_Open(rom_name, "r");
+    if (rom_slot == 0) {
+        os_PutStrFull("Could not open AppVar.");
+        while(!os_GetCSC());
+        return EXIT_FAILURE;
+    }
+
+    rom_size = ti_GetSize(rom_slot);
 
     chip8_init(chip8);
 
-    // TODO: Temporary until ROM loading implemented.
-    memcpy(&chip8->Mem[CHIP8_PROGRAMSTART], test_rom, sizeof(test_rom));
+    chunks_read = ti_Read(&chip8->Mem[CHIP8_PROGRAMSTART], rom_size, 1, rom_slot);
+    if (chunks_read != 1) {
+        os_PutStrFull("Could not read AppVar.");
+        return EXIT_FAILURE;
+    }
     
     gfx_Begin();
 
     gfx_SetMonospaceFont(8);
     gfx_SetTextFGColor(0);
     gfx_SetTextBGColor(255);
-
     gfx_SetDrawBuffer();
-    gfx_SetColor(CHIP8_BACKGROUNDCOLOR);
-    gfx_FillRectangle_NoClip(0, 0, LCD_WIDTH, LCD_HEIGHT);
-    gfx_Rectangle(CHIP8_SCRXOFFSET, CHIP8_SCRYOFFSET, CHIP8_SCRWIDTH * 4, CHIP8_SCRHEIGHT * 4);
+
+    /* Because swap draw is being used, must set the background color for both buffers. */
+    for (i = 0; i < 2; i++) {
+        gfx_SetColor(CHIP8_BACKGROUNDCOLOR);
+        gfx_FillRectangle_NoClip(0, 0, LCD_WIDTH, LCD_HEIGHT);
+        gfx_Rectangle(CHIP8_SCRXOFFSET, CHIP8_SCRYOFFSET, CHIP8_SCRWIDTH * 4, CHIP8_SCRHEIGHT * 4);
+        gfx_SwapDraw();
+    }
 
     reset_timer1();
     while (exec_again)
@@ -116,6 +143,7 @@ int main(void)
     free(chip8);
 
     os_ClrHomeFull();
+    ti_CloseAll();
 
-    return 0;
+    return EXIT_SUCCESS;
 }

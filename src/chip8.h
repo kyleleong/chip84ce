@@ -1,12 +1,12 @@
 #ifndef CHIP8_H
 #define CHIP8_H
 
-#define CHIP8_FONTSIZE        5
-#define CHIP8_KEYCOUNT        16
-#define CHIP8_SCRHEIGHT       32
-#define CHIP8_SCRWIDTH        64
-#define CHIP8_SPRITEWIDTH     8
-#define CHIP8_PROGRAMSTART    0x200
+#define CHIP8_FONTSIZE     5
+#define CHIP8_KEYCOUNT     16
+#define CHIP8_SCRHEIGHT    32
+#define CHIP8_SCRWIDTH     64
+#define CHIP8_SPRITEWIDTH  8
+#define CHIP8_PROGRAMSTART 0x200
 
 typedef signed char i8;
 typedef unsigned char u8;
