@@ -2,6 +2,8 @@
 
 This repository contians the source code for a CHIP-8 emulator that runs on the venerable TI-84, specifically the TI-84 CE. It is an exercise in embedded software development.
 
+![Test ROM Image](assets/test_rom.png)
+
 ## Tools
 
 I used the [CE Programming](https://github.com/CE-Programming/toolchain) toolchain as the C compiler for this project, and the [Cemu Emulator](https://github.com/CE-Programming/CEmu) for testing and debugging.
