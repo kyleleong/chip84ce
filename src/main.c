@@ -131,7 +131,9 @@ int main(void)
     for (i = 0; i < 2; i++) {
         gfx_SetColor(CHIP8_BACKGROUNDCOLOR);
         gfx_FillRectangle_NoClip(0, 0, LCD_WIDTH, LCD_HEIGHT);
-        gfx_Rectangle(CHIP8_SCRXOFFSET, CHIP8_SCRYOFFSET, CHIP8_SCRWIDTH * 4, CHIP8_SCRHEIGHT * 4);
+        gfx_Rectangle_NoClip(CHIP8_SCRXOFFSET, CHIP8_SCRYOFFSET,
+                             CHIP8_SCRWIDTH * CHIP8_PIXELWIDTH,
+                             CHIP8_SCRHEIGHT * CHIP8_PIXELHEIGHT);
         gfx_SwapDraw();
     }
 

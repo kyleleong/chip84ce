@@ -11,7 +11,7 @@ bool chip8_exec(struct chip8 *chip8)
     const u16 op  = (chip8->Mem[chip8->PC] << 8) | (chip8->Mem[chip8->PC + 1]);
 
     const u16 nnn = op & 0x0FFF;
-    const u8  kk  = op & 0x00FF;    
+    const u8  kk  = op & 0x00FF;
     const u8  n   = op & 0x000F;
     const u8  hi4 = (op & 0xF000) >> 12;
     const u8  x   = (op & 0x0F00) >> 8;
