@@ -85,7 +85,7 @@ bool loop(struct chip8 *chip8)
         }
 
     gfx_SwapDraw();
-    
+
     return true;
 }
 
@@ -95,7 +95,7 @@ int main(void)
     char rom_name[CHIP8_ROMNAMESIZE];
     int i, rom_size, chunks_read;
     struct chip8 *chip8 = malloc(sizeof(struct chip8));
-    ti_var_t rom_slot; 
+    ti_var_t rom_slot;
 
     ti_CloseAll();
 
@@ -119,7 +119,7 @@ int main(void)
         os_PutStrFull("Could not read AppVar.");
         return EXIT_FAILURE;
     }
-    
+
     gfx_Begin();
 
     gfx_SetMonospaceFont(8);
